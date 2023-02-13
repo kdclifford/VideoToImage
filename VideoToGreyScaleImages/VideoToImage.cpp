@@ -1,29 +1,78 @@
-// VideoToGreyScaleImages.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
+#include <stdio.h>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include <memory>
+#include <string>
+#include <stdexcept>
+#include <thread>
+
+const std::string temp = ("./Frames/");
+const auto deviceID = "..//TestVideo.mp4";
+const int apiID = cv::CAP_FFMPEG;
+
+// A dummy function
+void ProcessFrames(int count, float mod, float mod2)
+{
+	const int start = count * mod;
+	const int end = count * mod2;
+
+	cv::VideoCapture cap(deviceID, apiID);
+	cv::Mat frame;
+	cap.set(cv::CAP_PROP_POS_FRAMES, start);
+
+	//cap >> frame;
+	for (int index = start; index < end; ++index)
+	{
+
+		// If the frame is empty, break immediately
+		if (!cap.grab())
+			break;
+
+		cap.retrieve(frame);
+
+		cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
+		imwrite(temp + std::to_string(index) + ".png", frame);
+	}
+	cap.release();
+}
+
 
 int main()
 {
-	cv::VideoCapture cap("help.mp4");
+	// open selected camera using selected API
+	cv::VideoCapture cap(deviceID, apiID);
+	cv::Mat frame;
+	const double framecounttotal = cap.get(cv::CAP_PROP_FRAME_COUNT);
 
-	// Check if camera opened successfully
-	if (!cap.isOpened()) {
-		std::cout << "Error opening video stream or file" << std::endl;
-		return -1;
+	// This thread is launched by using
+	// function pointer as callable
+	std::thread th2(ProcessFrames, framecounttotal, 0.2f, 0.4f);
+	std::thread th3(ProcessFrames, framecounttotal, 0.4f, 0.6f);
+	std::thread th4(ProcessFrames, framecounttotal, 0.6f, 0.8f);
+	std::thread th1(ProcessFrames, framecounttotal, 0.8f, 1.0f);
+
+	//cap >> frame;
+	for (int index = 0; index < framecounttotal * 0.2f; ++index)
+	{
+		// If the frame is empty, break immediately
+		cap.grab();
+		cap.retrieve(frame);
+
+		cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
+		imwrite(temp + std::to_string(index) + ".png", frame);
 	}
+	cap.release();
+
+
+	th1.join();
+	th2.join();
+	th3.join();
+	th4.join();
+
+	// the camera will be deinitialized automatically in VideoCapture destructor
+	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
