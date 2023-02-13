@@ -1,26 +1,25 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <stdio.h>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include <memory>
 #include <string>
 #include <stdexcept>
 #include <thread>
 
-const std::string temp = ("./Frames/");
-const auto deviceID = "..//TestVideo.mp4";
+const std::string frameDir = ("./Frames/Frame_");
+const auto videoDir = "..//TestVideo.mp4";
 const int apiID = cv::CAP_FFMPEG;
 
-// A dummy function
 void ProcessFrames(int count, float mod, float mod2)
 {
 	const int start = count * mod;
 	const int end = count * mod2;
 
-	cv::VideoCapture cap(deviceID, apiID);
+	cv::VideoCapture cap(videoDir, apiID);
 	cv::Mat frame;
 	cap.set(cv::CAP_PROP_POS_FRAMES, start);
 
@@ -35,7 +34,7 @@ void ProcessFrames(int count, float mod, float mod2)
 		cap.retrieve(frame);
 
 		cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
-		imwrite(temp + std::to_string(index) + ".png", frame);
+		imwrite(frameDir + std::to_string(index) + ".png", frame);
 	}
 	cap.release();
 }
@@ -44,7 +43,7 @@ void ProcessFrames(int count, float mod, float mod2)
 int main()
 {
 	// open selected camera using selected API
-	cv::VideoCapture cap(deviceID, apiID);
+	cv::VideoCapture cap(videoDir, apiID);
 	cv::Mat frame;
 	const double framecounttotal = cap.get(cv::CAP_PROP_FRAME_COUNT);
 
@@ -63,7 +62,7 @@ int main()
 		cap.retrieve(frame);
 
 		cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
-		imwrite(temp + std::to_string(index) + ".png", frame);
+		imwrite(frameDir + std::to_string(index) + ".png", frame);
 	}
 	cap.release();
 
