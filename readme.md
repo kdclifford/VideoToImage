@@ -1,1 +1,1 @@
-hello
+Please develop a console application in C++ which uses OpenCV to load a video, covert video frames to grayscale in 4 parallel threads and save them as PNG image files to a location on disk.  Multithreading has to be implemented using standard C++ threading functionality offered by the std::thread class. The choice of video, OS, IDE and the output location can be of personal preference
